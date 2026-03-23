@@ -45,7 +45,22 @@ export async function getPianoMensile(anno: number, mese: number): Promise<Piano
     const valido = entries.length > 0 && entries.every(e => e.tipo && TIPI_VALIDI.includes(e.tipo));
     if (!valido) return null;
 
-    return data as PianoMese;
+    // Google Sheets converte le date ISO in oggetti Date → chiavi diventano "Sun Mar 01 2026 ..."
+    // Normalizziamo tutte le chiavi in formato ISO "YYYY-MM-DD"
+    const piano: PianoMese = {};
+    for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
+      let isoKey = key;
+      if (key.length > 10) {
+        const d = new Date(key);
+        if (!isNaN(d.getTime())) {
+          // Usa UTC per evitare shift di fuso orario
+          isoKey = d.toISOString().slice(0, 10);
+        }
+      }
+      const entry = value as Record<string, unknown>;
+      piano[isoKey] = { ...entry, data: isoKey } as PianoMese[string];
+    }
+    return piano;
   } catch {
     return null;
   }
