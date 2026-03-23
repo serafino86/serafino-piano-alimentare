@@ -14,17 +14,30 @@ export default async function GiornoPage({
 
   const dataISO = `${anno}-${String(mese).padStart(2, '0')}-${String(giorno).padStart(2, '0')}`;
 
-  // Chiama le funzioni direttamente — nessun fetch HTTP interno
+  // Genera sempre il piano localmente — garanzia che pianoGiorno non sia mai null
+  // Prova prima da Sheets (dati personalizzati), fallback al generato
   let pianoGiorno = null;
   try {
-    let piano = await getPianoMensile(anno, mese);
-    if (!piano) {
-      piano = generaMese(anno, mese);
-      savePianoMensile(anno, mese, piano).catch(() => {}); // salva in background
+    const pianoSheets = await getPianoMensile(anno, mese);
+    if (pianoSheets) {
+      pianoGiorno = pianoSheets[dataISO] ?? null;
     }
-    pianoGiorno = piano[dataISO] ?? null;
   } catch {
-    // pianoGiorno rimane null
+    // Sheets non raggiungibile
+  }
+
+  // Se Sheets fallisce o il giorno non c'è, genera localmente
+  if (!pianoGiorno) {
+    try {
+      const pianoLocale = generaMese(anno, mese);
+      pianoGiorno = pianoLocale[dataISO] ?? null;
+      // Salva su Sheets in background (non blocca il rendering)
+      if (pianoGiorno) {
+        savePianoMensile(anno, mese, pianoLocale).catch(() => {});
+      }
+    } catch {
+      // pianoGiorno rimane null solo se il giorno è fuori range
+    }
   }
 
   return (

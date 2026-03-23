@@ -255,12 +255,14 @@ function GiornoCard({
   const colazione = COLAZIONI[giorno.tipo];
 
   return (
-    <div style={{
-      background: 'var(--paper)',
-      border: oggi ? '2px solid var(--green)' : '1px solid var(--line)',
-      borderRadius: 12, overflow: 'hidden',
-      boxShadow: oggi ? '0 0 0 3px var(--green-soft)' : '0 2px 8px rgba(26,40,32,.05)',
-    }}>
+    <div
+      id={oggi ? 'card-oggi' : undefined}
+      style={{
+        background: 'var(--paper)',
+        border: oggi ? '2px solid var(--green)' : '1px solid var(--line)',
+        borderRadius: 12, overflow: 'hidden',
+        boxShadow: oggi ? '0 0 0 4px var(--green-soft)' : '0 2px 8px rgba(26,40,32,.05)',
+      }}>
       {/* Header */}
       <div style={{
         padding: '8px 12px', background: 'linear-gradient(135deg,#f8f5ed,#f0ebe0)',
@@ -333,18 +335,19 @@ function GiornoCard({
       </PastoBlock>
 
       {/* Link alla vista giornaliera */}
-      <div style={{ padding: '6px 12px 8px', borderTop: '1px solid var(--line)', textAlign: 'right' }}>
+      <div style={{ padding: '6px 10px 8px', borderTop: '1px solid var(--line)' }}>
         <a
           href={`/${giorno.data.slice(0, 4)}/${Number(giorno.data.slice(5, 7))}/${giorno.giorno}`}
           style={{
-            fontSize: 10,
-            color: 'var(--green)',
-            textDecoration: 'none',
-            fontWeight: 700,
-            letterSpacing: '.04em',
+            display: 'block', textAlign: 'center', textDecoration: 'none', fontWeight: 700,
+            borderRadius: 8, padding: oggi ? '9px 0' : '4px 0',
+            fontSize: oggi ? 13 : 10,
+            background: oggi ? 'var(--green)' : 'transparent',
+            color: oggi ? '#fff' : 'var(--green)',
+            letterSpacing: '.03em',
           }}
         >
-          Ricette &amp; dettaglio →
+          {oggi ? '📅 Apri il piano di oggi →' : 'Ricette & dettaglio →'}
         </a>
       </div>
     </div>
@@ -679,6 +682,17 @@ export function PianoMensileClient({ anno, mese }: Props) {
   }, [anno, mese]);
 
   useEffect(() => { caricaPiano(); }, [caricaPiano]);
+
+  // Auto-scroll a oggi dopo il caricamento (solo mese corrente)
+  useEffect(() => {
+    if (loading || !piano) return;
+    const oggi = new Date();
+    if (anno === oggi.getFullYear() && mese === oggi.getMonth() + 1) {
+      setTimeout(() => {
+        document.getElementById('card-oggi')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 200);
+    }
+  }, [loading, piano, anno, mese]);
 
   const handleRigenera = useCallback(async () => {
     setSyncStatus('syncing');
