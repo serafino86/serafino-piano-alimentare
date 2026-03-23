@@ -26,3 +26,18 @@ body {
   font-size: 14px;
   line-height: 1.5;
 }
+
+/* Mobile base */
+html {
+  -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
+}
+
+button, a {
+  touch-action: manipulation;
+}
+
+/* Safe area */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}

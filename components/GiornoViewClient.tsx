@@ -1045,14 +1045,19 @@ export function GiornoViewClient({ anno, mese, giorno, dataISO, pianoGiorno }: P
           <button
             onClick={navPrev}
             style={{
-              background: 'none',
+              background: 'var(--paper)',
               border: '1px solid var(--line)',
-              borderRadius: 8,
-              padding: '6px 12px',
-              fontSize: 13,
+              borderRadius: 12,
+              padding: '10px 18px',
+              fontSize: 20,
               color: 'var(--ink)',
               cursor: 'pointer',
               fontWeight: 600,
+              minWidth: 52,
+              minHeight: 48,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
             ←
@@ -1084,14 +1089,19 @@ export function GiornoViewClient({ anno, mese, giorno, dataISO, pianoGiorno }: P
           <button
             onClick={navNext}
             style={{
-              background: 'none',
+              background: 'var(--paper)',
               border: '1px solid var(--line)',
-              borderRadius: 8,
-              padding: '6px 12px',
-              fontSize: 13,
+              borderRadius: 12,
+              padding: '10px 18px',
+              fontSize: 20,
               color: 'var(--ink)',
               cursor: 'pointer',
               fontWeight: 600,
+              minWidth: 52,
+              minHeight: 48,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
             →
@@ -1158,7 +1168,7 @@ export function GiornoViewClient({ anno, mese, giorno, dataISO, pianoGiorno }: P
       <AlmanaccoBar dataISO={dataISO} />
 
       {/* ─── CONTENUTO ─── */}
-      <div style={{ maxWidth: 680, margin: '0 auto', padding: '16px 14px 40px' }}>
+      <div style={{ maxWidth: 680, margin: '0 auto', padding: '16px 12px 100px' }}>
         {!pianoGiorno ? (
           <div
             style={{
@@ -1290,6 +1300,34 @@ export function GiornoViewClient({ anno, mese, giorno, dataISO, pianoGiorno }: P
             )}
           </>
         )}
+      </div>
+
+      {/* ── Bottom sticky nav ── */}
+      <div style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0,
+        background: 'var(--paper)', borderTop: '1.5px solid var(--line)',
+        padding: '10px 16px',
+        paddingBottom: 'calc(10px + env(safe-area-inset-bottom, 0px))',
+        display: 'flex', gap: 8, zIndex: 200,
+      }}>
+        <a href={`/${anno}/${mese}`} style={{
+          flex: 1, textAlign: 'center', padding: '12px 0', borderRadius: 12,
+          background: 'var(--green-light)', border: '1px solid var(--green-soft)',
+          color: 'var(--green)', fontWeight: 700, fontSize: 14, textDecoration: 'none',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+        }}>
+          📅 Piano mese
+        </a>
+        <button onClick={navPrev} style={{
+          padding: '12px 20px', borderRadius: 12, border: '1px solid var(--line)',
+          background: 'var(--paper)', cursor: 'pointer', fontSize: 18, color: 'var(--ink)',
+          fontWeight: 700, minWidth: 52,
+        }}>←</button>
+        <button onClick={navNext} style={{
+          padding: '12px 20px', borderRadius: 12, border: '1px solid var(--line)',
+          background: 'var(--paper)', cursor: 'pointer', fontSize: 18, color: 'var(--ink)',
+          fontWeight: 700, minWidth: 52,
+        }}>→</button>
       </div>
     </div>
   );

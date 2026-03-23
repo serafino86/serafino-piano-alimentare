@@ -593,7 +593,7 @@ function CalendarioGrid({
   const offset = (firstDay.getDay() + 6) % 7;
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8 }}>
+    <div className="giorni-list" style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8 }}>
       {Array.from({ length: offset }).map((_, i) => <div key={`empty-${i}`} />)}
       {giorni.map(g => (
         <GiornoCard key={g.data} giorno={g}
@@ -770,59 +770,74 @@ export function PianoMensileClient({ anno, mese }: Props) {
       {/* ── Stili responsive ── */}
       <style>{`
         .piano-layout { display: grid; grid-template-columns: 1fr 300px; gap: 12px; align-items: start; }
-        .mobile-tabs { display: none; }
-        .spesa-panel { display: block !important; }
+        .bottom-nav { display: none; }
+        .top-tabs { display: none; }
+        .giorni-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+        .giorni-list { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+        .spesa-block { display: block; }
+        .piano-block { display: block; }
         @media (max-width: 900px) {
           .piano-layout { grid-template-columns: 1fr; }
         }
         @media (max-width: 768px) {
-          .mobile-tabs { display: flex !important; position: sticky; top: 0; z-index: 100;
-            background: var(--paper); border-bottom: 2px solid var(--line); }
-          .giorni-grid { grid-template-columns: 1fr !important; }
-          body { padding-bottom: 60px; }
+          .bottom-nav { display: flex !important; position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+            background: var(--paper); border-top: 1.5px solid var(--line);
+            padding-bottom: env(safe-area-inset-bottom, 8px); }
+          .giorni-list { grid-template-columns: 1fr !important; gap: 8px !important; }
+          body { padding-bottom: 80px; }
+          .header-actions { flex-direction: column !important; align-items: flex-start !important; }
+          .mese-nav { flex-wrap: nowrap !important; }
+        }
+        @media (min-width: 769px) {
+          .piano-block { display: block !important; }
+          .spesa-block { display: block !important; }
         }
       `}</style>
 
       {/* ── Header ── */}
       <header style={{
         background: 'linear-gradient(135deg,#fffdf8,#eef5ee)',
-        borderBottom: '1px solid var(--line)', padding: '12px 20px',
+        borderBottom: '1px solid var(--line)', padding: '10px 14px',
         boxShadow: '0 2px 12px rgba(26,40,32,.06)',
+        position: 'sticky', top: 0, zIndex: 100,
       }}>
-        <div style={{ maxWidth: 1500, margin: '0 auto', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-          <div>
-            <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--ink)', marginBottom: 8 }}>
-              Piano Alimentare
+        <div style={{ maxWidth: 1500, margin: '0 auto' }}>
+          {/* Top row: titolo + mese nav */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+            <h1 style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink)', margin: 0 }}>
+              🌿 Piano Serafino
             </h1>
-            <ProfiloSelector profilo={profilo} fase={fase} onChange={handleProfiloChange} />
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-              <Btn onClick={() => navMese(-1)}>← Mese prec.</Btn>
-              <span style={{ padding: '7px 14px', background: 'var(--green)', color: '#fff', borderRadius: 9, fontSize: 13, fontWeight: 700 }}>
+            <div className="mese-nav" style={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap' }}>
+              <Btn onClick={() => navMese(-1)}>←</Btn>
+              <span style={{ padding: '6px 12px', background: 'var(--green)', color: '#fff', borderRadius: 9, fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap' }}>
                 {nomeMese} {anno}
               </span>
-              <Btn onClick={() => navMese(1)}>Mese succ. →</Btn>
-              <Btn onClick={handleRigenera} primary disabled={loading}>↺ Rigenera mese</Btn>
+              <Btn onClick={() => navMese(1)}>→</Btn>
+              <Btn onClick={handleRigenera} primary disabled={loading}>↺</Btn>
             </div>
+          </div>
+          {/* Bottom row: profilo + sync */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+            <ProfiloSelector profilo={profilo} fase={fase} onChange={handleProfiloChange} />
             {syncStatus !== 'idle' && (
-              <span style={{ fontSize: 11, color: syncColor }}>{syncLabel}</span>
+              <span style={{ fontSize: 10, color: syncColor, whiteSpace: 'nowrap' }}>{syncLabel}</span>
             )}
-            {ricalcolo && <span style={{ fontSize: 11, color: 'var(--amber)' }}>⟳ Ricalcolo macro...</span>}
           </div>
         </div>
       </header>
 
-      {/* ── Mobile tabs ── */}
-      <div className="mobile-tabs">
+      {/* ── Bottom nav mobile ── */}
+      <div className="bottom-nav">
         {(['piano', 'spesa'] as const).map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)} style={{
-            flex: 1, padding: '12px 0', fontWeight: 700, fontSize: 13,
-            background: 'none', border: 'none', cursor: 'pointer',
-            borderBottom: activeTab === tab ? '3px solid var(--green)' : '3px solid transparent',
+            flex: 1, padding: '12px 0 10px', fontWeight: 700, fontSize: 13,
+            background: 'none', border: 'none', cursor: 'pointer', display: 'flex',
+            flexDirection: 'column', alignItems: 'center', gap: 3,
             color: activeTab === tab ? 'var(--green)' : 'var(--muted)',
           }}>
-            {tab === 'piano' ? 'Piano' : 'Spesa'}
+            <span style={{ fontSize: 20 }}>{tab === 'piano' ? '📅' : '🛒'}</span>
+            <span style={{ fontSize: 11 }}>{tab === 'piano' ? 'Piano' : 'Spesa'}</span>
+            {activeTab === tab && <div style={{ width: 24, height: 2, background: 'var(--green)', borderRadius: 99, marginTop: 2 }} />}
           </button>
         ))}
       </div>
@@ -842,8 +857,8 @@ export function PianoMensileClient({ anno, mese }: Props) {
         ) : (
           <div className="piano-layout">
             {/* Piano */}
-            <div style={{ display: activeTab === 'piano' || true ? 'block' : 'none' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, marginBottom: 6 }}>
+            <div className="piano-block" style={{ display: activeTab === 'piano' ? 'block' : 'none' }}>
+              <div className="giorni-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, marginBottom: 6 }}>
                 {['Lun','Mar','Mer','Gio','Ven','Sab','Dom'].map(g => (
                   <div key={g} style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, color: 'var(--muted)', padding: '4px 0' }}>{g}</div>
                 ))}
@@ -852,12 +867,14 @@ export function PianoMensileClient({ anno, mese }: Props) {
 
               {/* Hint mobile */}
               <div style={{ marginTop: 12, padding: '8px 12px', background: 'var(--green-light)', borderRadius: 8, fontSize: 11, color: 'var(--green)', fontWeight: 500 }}>
-                Tocca una proteina, feculento o grasso (↕) per cambiarlo con una variante
+                Tocca una proteina, feculento o grasso (↕) per cambiarlo
               </div>
             </div>
 
             {/* Spesa */}
-            <ListaSpesa spesa={spesa} settimane={settimane} />
+            <div className="spesa-block" style={{ display: activeTab === 'spesa' ? 'block' : 'none' }}>
+              <ListaSpesa spesa={spesa} settimane={settimane} />
+            </div>
           </div>
         )}
       </div>
