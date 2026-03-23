@@ -1,4 +1,6 @@
 import { GiornoViewClient } from '@/components/GiornoViewClient';
+import { getPianoMensile, savePianoMensile } from '@/lib/sheets';
+import { generaMese } from '@/lib/generator';
 
 export default async function GiornoPage({
   params,
@@ -10,21 +12,17 @@ export default async function GiornoPage({
   const mese = Number(meseStr);
   const giorno = Number(giornoStr);
 
-  // Costruisci data ISO
   const dataISO = `${anno}-${String(mese).padStart(2, '0')}-${String(giorno).padStart(2, '0')}`;
 
-  // Fetch piano (server-side)
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : 'http://localhost:3001';
-
+  // Chiama le funzioni direttamente — nessun fetch HTTP interno
   let pianoGiorno = null;
   try {
-    const res = await fetch(`${baseUrl}/api/piano?anno=${anno}&mese=${mese}`, {
-      cache: 'no-store',
-    });
-    const data = await res.json();
-    pianoGiorno = data.piano?.[dataISO] ?? null;
+    let piano = await getPianoMensile(anno, mese);
+    if (!piano) {
+      piano = generaMese(anno, mese);
+      savePianoMensile(anno, mese, piano).catch(() => {}); // salva in background
+    }
+    pianoGiorno = piano[dataISO] ?? null;
   } catch {
     // pianoGiorno rimane null
   }
